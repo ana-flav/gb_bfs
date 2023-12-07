@@ -64,25 +64,45 @@ def aresta_tipo(graph, parent, level):
     for node, connections in graph.items():
         for connection in connections:
             if parent[connection] == node and level[node] == level[connection] - 1:
-                if (node, connection) not in conjunto['arestas pai']:
+                if (node, connection) not in conjunto['arestas pai'] and (connection, node) not in conjunto['arestas pai']:
                     conjunto['arestas pai'].append((node, connection))
                 print(f'{node} -> {connection} é aresta de pai')
             elif level[node] == level[connection] and parent[node] == parent[connection]:
-                if (node, connection) not in conjunto['arestas irmão']:
+                if (node, connection) not in conjunto['arestas irmão'] and (connection, node) not in conjunto['arestas irmão']:
                     conjunto['arestas irmão'].append((node, connection))
                 print(f'{node} -> {connection} é aresta de irmão')
             elif level[node] == level [connection] and parent[node] != parent[connection]:
-                if (node, connection) or (connection, node) not in conjunto['arestas primo']:
+                if (node, connection) not in conjunto['arestas primo'] and (connection, node) not in conjunto['arestas primo']:
                     conjunto['arestas primo'].append((node, connection))
                 print(f'{node} -> {connection} é aresta de primo')
             elif level[connection] == level[node] + 1 and parent[node] != parent[connection]:
-                if (node, connection) not in conjunto['arestas tio']:
+                if (node, connection) not in conjunto['arestas tio'] and (connection, node) not in conjunto['arestas tio']:
                     conjunto ['arestas tio'].append((node, connection))
                 print(f'{node} -> {connection} é aresta de tio')
 
     print(conjunto)
-
-          
+    plot_arvore(conjunto, graph)
+    
+def plot_arvore(conjunt, graph):
+    
+    plt.figure()
+    g = nx.Graph(conjunt)
+    cores = ['red', 'blue', 'green', 'yellow']
+    for node, connections in graph.items():
+        for connection in connections:
+            if (node, connection) in conjunt['arestas pai'] or (connection, node) in conjunt['arestas pai']:
+                g.add_edge(node, connection, color=cores[0])
+            elif (node, connection) in conjunt['arestas irmão'] or (connection, node) in conjunt['arestas irmão']:
+                g.add_edge(node, connection, color=cores[1])
+            elif (node, connection) in conjunt['arestas primo'] or (connection, node) in conjunt['arestas primo']:
+                g.add_edge(node, connection, color=cores[2])
+            elif (node, connection) in conjunt['arestas tio'] or (connection, node) in conjunt['arestas tio']:
+                g.add_edge(node, connection, color=cores[3])
+    cores = nx.get_edge_attributes(g, 'color').values()
+    nx.draw(g, with_labels=True, font_weight='bold', node_color='pink', edge_color=cores)
+    plt.savefig('arvore.png')
+    
+    
 
 def main():
     numero = int(input('Informe um número de uma matris que você hosgtato de pegar?: '))
