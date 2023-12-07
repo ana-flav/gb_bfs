@@ -34,7 +34,6 @@ def plot_graph(graph):
     nx.draw(g, with_labels=True, font_weight='bold', node_color='pink')
     plt.savefig('graph.png')
 
-# TODO: Aplicar busca em largura no grafo
 
 def bfs(graph, start):
     print(len(graph))
@@ -80,6 +79,11 @@ def aresta_tipo(graph, parent, level):
                     conjunto ['arestas tio'].append((node, connection))
                 print(f'{node} -> {connection} é aresta de tio')
 
+    if conjunto['arestas irmão'] == [] and conjunto['arestas primo'] == []:
+        print('é bipartido')
+    else:
+        print(f'Não é bipartido pois tem arestas de irmão {conjunto["arestas irmão"]} ou primo {conjunto["arestas primo"]}')
+       
     print(conjunto)
     plot_arvore(conjunto, graph)
     
