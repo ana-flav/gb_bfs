@@ -1,13 +1,11 @@
+from matplotlib.pylab import matrix_power
 import matplotlib.pyplot as plt
 import networkx as nx
 import os
 
-def construir_grafo(matriz):
-    linhas = matriz.strip().split('\n')
-    matriz_numerica = []
-    for linha in linhas:
-        numeros = [int(num) for num in linha.split()]
-        matriz_numerica.append(numeros)
+import numpy as np
+
+def construir_grafo(matriz_numerica):
     grafo = {}
     num_linhas = len(matriz_numerica)
     for i in range(num_linhas):
@@ -77,13 +75,37 @@ def aresta_tipo(grafo, pai, nivel):
         print(f'Não é bipartido pois tem arestas de irmão {conjunto["arestas irmão"]} ou primo {conjunto["arestas primo"]}')
        
     print(conjunto)
+    
+    
+def conexo_ou_nao(adjacency_matrix, num_vertex):
+    aux = []
+    for i in range(num_vertex):
+        row = []
+        for j in range(num_vertex):
+            row.append(adjacency_matrix[i][j])
+        row[i] = 1
+        aux.append(row)
+
+    for row in aux:
+        print(row)
+
+    A = np.array(aux) 
+    print(matrix_power(A, 10))
+
+    connected = 'O grafo é desconexo'
+    for row in A:
+        if 0 not in A:
+            connected = 'O grafo é conexo'
+
+    return connected
 
 def main():
 
     with open('matriz.txt', 'r') as arquivo:
         conteudo = arquivo.read()
         matrizes = conteudo.split('\n\n')
-    
+        matrizes = [matriz.split('\n') for matriz in matrizes]
+        
     print(conteudo)
     print(f"\nForam carregadas {len(matrizes)} matrizes.")
     numero = int(input(f"Informe a matriz que você gostaria de manipular de 1 a {len(matrizes)}: "))
@@ -91,7 +113,18 @@ def main():
 
     for indice, matriz in enumerate(matrizes, start=1):
         if numero == indice:
-            grafo = construir_grafo(matriz)
+            matriz = [linha.split() for linha in matriz]
+            matriz_numerica = []
+            
+            for linha in matriz:
+
+                linha_numerica = []
+                for elemento in linha:
+                    linha_numerica.append(int(elemento))
+                matriz_numerica.append(linha_numerica)
+                
+            print(conexo_ou_nao(matriz_numerica, len(matriz_numerica)))
+            grafo = construir_grafo(matriz_numerica)
             plot_grafo(grafo)
             print("Os vértices são: ", list(grafo.keys()))
 
