@@ -77,12 +77,12 @@ def aresta_tipo(grafo, pai, nivel):
     print(conjunto)
     
     
-def conexo_ou_nao(adjacency_matrix, num_vertex):
+def conexo_ou_nao(matriz, numero_vertices):
     aux = []
-    for i in range(num_vertex):
+    for i in range(numero_vertices):
         row = []
-        for j in range(num_vertex):
-            row.append(adjacency_matrix[i][j])
+        for j in range(numero_vertices):
+            row.append(matriz[i][j])
         row[i] = 1
         aux.append(row)
 
@@ -90,12 +90,13 @@ def conexo_ou_nao(adjacency_matrix, num_vertex):
         print(row)
 
     A = np.array(aux) 
-    print(matrix_power(A, 10))
+    A = matrix_power(A, numero_vertices)
+    print(matrix_power(A, numero_vertices))
 
-    connected = 'O grafo é desconexo'
+    connected = False
     for row in A:
         if 0 not in A:
-            connected = 'O grafo é conexo'
+            connected = True
 
     return connected
 
@@ -110,24 +111,20 @@ def main():
     print(f"\nForam carregadas {len(matrizes)} matrizes.")
     numero = int(input(f"Informe a matriz que você gostaria de manipular de 1 a {len(matrizes)}: "))
 
+    if numero > len(matrizes):
+        print("Não existe essa matriz")
+        exit()
 
     for indice, matriz in enumerate(matrizes, start=1):
         if numero == indice:
             matriz = [linha.split() for linha in matriz]
             matriz_numerica = []
-            
-            for linha in matriz:
+            matriz_numerica = [[int(valor) for valor in linha] for linha in matriz]
 
-                linha_numerica = []
-                for elemento in linha:
-                    linha_numerica.append(int(elemento))
-                matriz_numerica.append(linha_numerica)
-                
-            print(conexo_ou_nao(matriz_numerica, len(matriz_numerica)))
             grafo = construir_grafo(matriz_numerica)
             plot_grafo(grafo)
             print("Os vértices são: ", list(grafo.keys()))
-
+            
     op = 0
     opcoes = [1, 2, 3]
     while(op not in opcoes):
@@ -141,15 +138,18 @@ def main():
             \nOpção escolhida: '''))
         
     if op == 1:
-        print("Inserir aqui função que verifica se o grafo é conexo")
+            if conexo_ou_nao(matriz_numerica, len(matriz_numerica)):
+                print("O grafo é conexo")
+            else:
+                print("O grafo não é conexo")
 
     elif op == 2:
-        raiz = int(input('Informe o nó raiz: '))
+        raiz = int(input('Informe o nó incial: '))
         pai, nivel = bfs(grafo, raiz)
         aresta_tipo(grafo, pai, nivel)
 
     else:
-        print("Inserir aqui função de encontrar bipartição")
+        print("Inserir aqui função que encontra bipartição")
         
 
                
