@@ -1,74 +1,75 @@
 import matplotlib.pyplot as plt
 import networkx as nx
+import os
 
-def make_graph(matriz):
+def construir_grafo(matriz):
     linhas = matriz.strip().split('\n')
     matriz_numerica = []
     for linha in linhas:
         numeros = [int(num) for num in linha.split()]
         matriz_numerica.append(numeros)
-    graph = {}
+    grafo = {}
     num_linhas = len(matriz_numerica)
     for i in range(num_linhas):
-        connections = []
+        adjacentes = []
         for j in range(len(matriz_numerica[i])):
             if matriz_numerica[i][j] != 0:
-                connections.append(j+1)
-        graph[i+1] = connections
-    return graph
+                adjacentes.append(j+1)
+        grafo[i+1] = adjacentes
+    return grafo
 
-def plot_graph(graph):
+def plot_grafo(grafo):
     plt.figure()
-    g = nx.Graph(graph)
-    for node, connections in graph.items():
-        for connection in connections:
-            g.add_edge(node, connection)
+    g = nx.Graph(grafo)
+    for no, adjacentes in grafo.items():
+        for adjacente in adjacentes:
+            g.add_edge(no, adjacente)
             
     nx.draw(g, with_labels=True, font_weight='bold', node_color='pink')
     plt.savefig('graph.png')
 
-def bfs(graph, start):
-    visatado = [False] * (len(graph)+1)  
-    papi = [-1] * (len(graph)+1)  
-    level = [-1] * (len(graph)+1)  
-    fila = [start]
-    visatado[start] = True
-    level[start] = 0
-    papi[start] = 0
-    largura = [0] * (len(graph)+1)
+def bfs(grafo, raiz):
+    visitado = [False] * (len(grafo)+1)  
+    pai = [-1] * (len(grafo)+1)  
+    nivel = [-1] * (len(grafo)+1)  
+    fila = [raiz]
+    visitado[raiz] = True
+    nivel[raiz] = 0
+    pai[raiz] = 0
+    largura = [0] * (len(grafo)+1)
     i = 0
     
     while fila != []:
         i += 1
-        current = fila.pop(0)
-        for neighbor in graph[current]:
-            if not visatado[neighbor]:
-                visatado[neighbor] = True
-                papi[neighbor] = current
-                level[neighbor] = level[current] + 1
-                fila.append(neighbor)
+        atual = fila.pop(0)
+        for vizinho in grafo[atual]:
+            if not visitado[vizinho]:
+                visitado[vizinho] = True
+                pai[vizinho] = atual
+                nivel[vizinho] = nivel[atual] + 1
+                fila.append(vizinho)
        
-        largura[i] = current
+        largura[i] = atual
         print(f'largura: {largura}')
-    return papi, level
+    return pai, nivel
 
-def aresta_tipo(graph, parent, level):
+def aresta_tipo(grafo, pai, nivel):
     conjunto = {'arestas pai': [], 'arestas irmão': [], 'arestas primo': [], 'arestas tio': []}
     
-    for node, connections in graph.items():
-        for connection in connections:
-            if parent[connection] == node and level[node] == level[connection] - 1:
-                if (node, connection) not in conjunto['arestas pai'] and (connection, node) not in conjunto['arestas pai']:
-                    conjunto['arestas pai'].append((node, connection))
-            elif level[node] == level[connection] and parent[node] == parent[connection]:
-                if (node, connection) not in conjunto['arestas irmão'] and (connection, node) not in conjunto['arestas irmão']:
-                    conjunto['arestas irmão'].append((node, connection))
-            elif level[node] == level [connection] and parent[node] != parent[connection]:
-                if (node, connection) not in conjunto['arestas primo'] and (connection, node) not in conjunto['arestas primo']:
-                    conjunto['arestas primo'].append((node, connection))
-            elif level[connection] == level[node] + 1 and parent[node] != parent[connection]:
-                if (node, connection) not in conjunto['arestas tio'] and (connection, node) not in conjunto['arestas tio']:
-                    conjunto ['arestas tio'].append((node, connection))
+    for no, adjacentes in grafo.items():
+        for adjacente in adjacentes:
+            if pai[adjacente] == no and nivel[no] == nivel[adjacente] - 1:
+                if (no, adjacente) not in conjunto['arestas pai'] and (adjacente, no) not in conjunto['arestas pai']:
+                    conjunto['arestas pai'].append((no, adjacente))
+            elif nivel[no] == nivel[adjacente] and pai[no] == pai[adjacente]:
+                if (no, adjacente) not in conjunto['arestas irmão'] and (adjacente, no) not in conjunto['arestas irmão']:
+                    conjunto['arestas irmão'].append((no, adjacente))
+            elif nivel[no] == nivel [adjacente] and pai[no] != pai[adjacente]:
+                if (no, adjacente) not in conjunto['arestas primo'] and (adjacente, no) not in conjunto['arestas primo']:
+                    conjunto['arestas primo'].append((no, adjacente))
+            elif nivel[adjacente] == nivel[no] + 1 and pai[no] != pai[adjacente]:
+                if (no, adjacente) not in conjunto['arestas tio'] and (adjacente, no) not in conjunto['arestas tio']:
+                    conjunto['arestas tio'].append((no, adjacente))
                     
     if conjunto['arestas irmão'] == [] and conjunto['arestas primo'] == []:
         print('é bipartido')
@@ -78,20 +79,46 @@ def aresta_tipo(graph, parent, level):
     print(conjunto)
 
 def main():
-    numero = int(input('Informe um número de uma matris que você hosgtato de pegar?: '))
+
     with open('matriz.txt', 'r') as arquivo:
         conteudo = arquivo.read()
         matrizes = conteudo.split('\n\n')
+    
+    print(conteudo)
+    print(f"\nForam carregadas {len(matrizes)} matrizes.")
+    numero = int(input(f"Informe a matriz que você gostaria de manipular de 1 a {len(matrizes)}: "))
+
+
+    for indice, matriz in enumerate(matrizes, start=1):
+        if numero == indice:
+            grafo = construir_grafo(matriz)
+            plot_grafo(grafo)
+            print("Os vértices são: ", list(grafo.keys()))
+
+    op = 0
+    opcoes = [1, 2, 3]
+    while(op not in opcoes):
+        op = int(input('''\n\n---------------------------------------------------------
+            \nDigite a opção desejada:
+            \n---------------------------------------------------------
+            \n1|Verificar se o grafo é conexo
+            \n2|Aplicar busca em largura
+            \n3|Encontrar bipartição
+            \n---------------------------------------------------------
+            \nOpção escolhida: '''))
         
-        # ver se ele e conexo ou nao 
-        for indice, matriz in enumerate(matrizes, start=1):
-            if numero == indice:
-                graph = make_graph(matriz)
-                plot_graph(graph)
-                print("Os vértices são: ", list(graph.keys()))
-                start = int(input('Informe o nó inicial: '))
-                parent, level = bfs(graph, start)
-                aresta_tipo(graph, parent, level)
+    if op == 1:
+        print("Inserir aqui função que verifica se o grafo é conexo")
+
+    elif op == 2:
+        raiz = int(input('Informe o nó raiz: '))
+        pai, nivel = bfs(grafo, raiz)
+        aresta_tipo(grafo, pai, nivel)
+
+    else:
+        print("Inserir aqui função de encontrar bipartição")
+        
+
                
 main()
 
